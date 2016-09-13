@@ -14,7 +14,20 @@ var deepEqual = module.exports = function (actual, expected, opts) {
   // 7.3. Other pairs that do not both pass typeof value == 'object',
   // equivalence is determined by ==.
   } else if (!actual || !expected || typeof actual != 'object' && typeof expected != 'object') {
-    return opts.strict ? actual === expected : actual == expected;
+    // If we're doing fuzzy number comparisons and we have two numbers
+    if (opts.fuzzy && !isNaN(actual) && !isNaN(expected)) {
+      if (typeof actual == 'string') {
+        actual = Number(actual);
+      }
+
+      if (typeof expected == 'string') {
+        expected = Number(expected);
+      }
+
+      return Math.abs(expected - actual) < opts.fuzzCoeff || 0.001
+    } else {
+      return opts.strict ? actual === expected : actual == expected;
+    }
 
   // 7.4. For all other Object pairs, including Array objects, equivalence is
   // determined by having the same number of owned properties (as verified
